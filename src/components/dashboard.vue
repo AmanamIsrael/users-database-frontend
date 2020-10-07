@@ -3,7 +3,7 @@
         <sidebar></sidebar>
         <div class="content">
             <div class="container">
-               <dashboardContent></dashboardContent>
+               <dashboardContent :users="users"></dashboardContent>
             </div>
         </div>
     </div>
@@ -19,7 +19,20 @@ export default {
     },
     data(){
         return {
-
+            users: []
+        }
+    },
+    methods: {
+        async getAllUsers(){
+            try{
+                const res = await this.$http.get('/users');
+                const data = res.data;
+                this.users = data;
+                console.log(this.users);
+            }
+            catch(error){
+                console.error(error)
+            }
         }
     },
     created() {
@@ -29,6 +42,7 @@ export default {
                 'path': '/login'
             })
         }
+        this.getAllUsers();
     }
 }
 </script>

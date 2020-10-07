@@ -13,7 +13,7 @@ Vue.prototype.$http = http;
 // interceptor
 
 http.interceptors.request.use(config => {
-    config.headers["Authorization"] = localStorage.getItem("jwtToken");
+    config.headers["auth-token"] = localStorage.getItem("user-token");
     return config;
 });
 

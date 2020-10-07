@@ -3,7 +3,7 @@
         <div class="wrapper">
             <b-button v-b-modal.form-modal variant="primary d-block ml-auto my-3"><i class="fas fa-plus"></i> Add new user</b-button>
         <b-modal id="form-modal" hide-footer  title="Add User">
-            <b-form @submit="addUser" @reset="resetModal" noValidate="true">
+            <b-form @submit.prevent="addUser" @reset="resetModal" noValidate="true">
                 <b-form-group
                         id="first"
                         label="First Name"
@@ -11,7 +11,7 @@
                         >
                         <b-form-input
                         id="firstname"
-                        v-model="userDetails.first_name"
+                        v-model="userDetails.firstname"
                         type="text"
                         required
                         placeholder="Enter First name"
@@ -24,7 +24,7 @@
                         >
                         <b-form-input
                         id="lastname"
-                        v-model="userDetails.last_name"
+                        v-model="userDetails.lastname"
                         type="text"
                         required
                         placeholder="Enter Last name"
@@ -56,15 +56,14 @@
                      <b-th>Age</b-th>
                      <b-th>Actions</b-th>
                  </b-thead>
-                 <b-tbody>
-                     <b-td>man</b-td>
-                     <b-td>man</b-td>
-                     <b-td>man</b-td>
+                 <b-tbody v-for="user in users" :key="user.id">
+                     <b-td>{{user.firstname}}</b-td>
+                     <b-td>{{user.lastname}}</b-td>
+                     <b-td>{{user.age}}</b-td>
                      <b-td>
                          <div>
                              <b-dropdown variant="light" id="dropdown-1" text="Action">
-                                 <b-dropdown-item>Edit</b-dropdown-item>
-                                 <b-dropdown-item>Delete</b-dropdown-item>
+                                 <b-dropdown-item v-on:click="deleteUser(user._id)">Delete</b-dropdown-item>
                              </b-dropdown>
                         </div>
                     </b-td>
@@ -76,35 +75,68 @@
     </div>
 </template>
 <script>
+import Swal from 'sweetalert2'
 export default {
     name: 'dashboardContent',
-    props: {
-    },
+    props:['users'],
     data(){
         return {
-            items: [
-            { first_name: 'Dickerson', last_name: 'Macdonald', age: 40,}
-            ],
-
             userDetails: {
-                first_name: '',
-                last_name: '',
+                firstname: '',
+                lastname: '',
                 age: '',
             }
         }
     }, 
     methods: {
-        addUser(){
-            event.preventDefault();
-            console.log(this.userDetails)
+        async addUser(){
+            for(let values in this.userDetails){
+                if(values=== ''){
+                    return;
+                }
+            }
+            const sendData = await this.$http.post('/users/add-user', this.userDetails);
+            console.log(sendData);
             this.$nextTick(()=> {
-                this.$bvModal.hide('formModal')
-            })
+                this.$bvModal.hide('form-modal')
+            });
+            this.$parent.getAllUsers();
         },
         resetModal() {
         this.first_name = ''
         this.last_name = ''
         this.age = ''
+        },
+        deleteUser(userId){
+            const payload = {
+                _id: userId
+            }
+            try{
+                Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+                }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const deleteUser = await this.$http.post('/users/delete-user', payload);
+                    console.log(deleteUser);
+                    this.$parent.getAllUsers();
+                    Swal.fire(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                    )
+                }
+                })
+                
+            }
+            catch(error){
+                console.error(error);
+            }
         }
     }
 }
