@@ -21,6 +21,14 @@ export default {
         return {
 
         }
+    },
+    created() {
+        const token = localStorage.getItem('user-token');
+        if(!token){
+            this.$router.push({
+                'path': '/login'
+            })
+        }
     }
 }
 </script>

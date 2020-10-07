@@ -1,13 +1,13 @@
 <template>
 <div class="container">
-    <form @submit="submit" class="form">
+    <form @submit.prevent="submit" class="form">
   <div class="form-group">
     <label for="email">Email address</label>
-    <input autocomplete="true" required v-model="form.email" type="email" class="form-control" id="email" aria-describedby="emailHelp">
+    <input autocomplete="true" required v-model="login.email" type="email" class="form-control" id="email" aria-describedby="emailHelp">
   </div>
   <div class="form-group">
     <label for="password">Password</label>
-    <input autocomplete="true" required v-model="form.password" type="password" class="form-control" id="password">
+    <input autocomplete="true" required v-model="login.password" type="password" class="form-control" id="password">
   </div>
   <button type="submit" class="btn btn-primary">Submit</button>
 </form>
@@ -18,22 +18,28 @@ export default {
     name: 'login',
     data() {
         return {
-            form: {
+            login: {
                 email: '',
                 password: ''
             }
         }
     },
     methods: {
-        submit(event){
-            event.preventDefault();
-            console.log(this.form);
-            this.$router.push({
-                path: '/dashboard'
-            });
-            
+        async submit(){
+            console.log(this.login);
+            try{
+                const res = await this.$http.post('/auth/login', this.login);
+                const data = res.data;
+                localStorage.setItem('user-token', data.token)
+                this.$router.push({
+                    'path': '/dashboard'
+                })
+            }
+        catch(error){
+            console.error(error);
         }
     }
+}
 }
 </script>
 <style scoped>
